@@ -1,0 +1,108 @@
+     set internal_tmp_mem_storage_engine = Memory;
+    WITH store_department as (
+        SELECT
+            s.id as store_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2,
+            s.city_name
+        FROM prod_core_service.store s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH OFFLINE'
+    )
+    , source_department as (
+        SELECT
+            s.id as source_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2
+        FROM prod_core_service.source s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH ONLINE')
+    , payment as (
+        SELECT
+            order_id,
+            SUM(amount) as amount
+        FROM prod_order_service.payment
+        WHERE 1=1
+            and payment_method_code = 'point'
+            and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= '2020-01-01'
+        GROUP BY order_id
+    )
+    , return_order as (
+        SELECT
+            order_id,
+            MAX(customer_id) as customer_id,
+            SUM(money_refund) as total_money_refund
+        FROM prod_order_service.order_return
+        WHERE 1=1
+            and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= '2020-01-01'
+            and status = 'finished'
+            and is_deleted = 0
+        GROUP BY order_id
+    )
+    , orders as (SELECT
+        #         DATE_FORMAT(CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date),'%m/01/%Y') as created_date,
+            DATE_FORMAT(CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date), '%m/%Y')                as created_month,
+            DATE_FORMAT(CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date), '%Y')                   as created_year,
+            COALESCE(std.department_lv1, sod.department_lv1, 'Khác')                                     as department_lv1,
+            COALESCE(std.department_lv2, sod.department_lv2, 'Khác')                                     as department_lv2,
+            o.total as doanh_thu,
+            ro.total_money_refund as doanh_thu_tra_hang,
+            (o.total - COALESCE(p.amount, 0) - COALESCE(ro.total_money_refund, 0))                       as doanh_thu_thuan,
+            o.id                                                                                         as order_id,
+            o.status,
+            o.customer_id,
+            ro.order_id as return_order_id,
+            IF(CAST(o.created_date as date) = CAST(r.first_order_time as date), 'khach_moi', 'khach_cu') as loai_khach,
+            total_quantities as sl_san_pham
+            #         IF(o.created_date = r.first_order_time,'new_customer','old_customer') as customer_type,
+        FROM prod_order_service.orders o
+        LEFT JOIN return_order ro on ro.order_id = o.id
+        LEFT JOIN payment p on p.order_id = o.id
+        left join prod_order_service.shipping_address sa on
+            sa.order_id = o.id
+            and o.channel_code <> 'POS'
+            and sa.is_deleted = 0
+            and sa.order_id <> -1
+        LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+        LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+        LEFT JOIN prod_customer_service.reports r on o.customer_id = r.user_id
+        WHERE 1 = 1
+             and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date) >= '2020-01-01'
+            and o.is_deleted = 0
+            and total < 10000000
+    )
+,caculate_order as (
+    SELECT
+        created_month,
+        created_year,
+        department_lv1,
+        department_lv2,
+        COUNT(order_id) as sl_don_tao,
+        COUNT(return_order_id) as sl_don_tra,
+        COUNT(if(status = 'finished',order_id,null)) as sl_don_thanh_cong,
+        COUNT(if(status = 'finished'and loai_khach = 'khach_moi',order_id,null)) as sl_don_thanh_cong_khach_moi,
+        COUNT(if(status = 'finished'and loai_khach = 'khach_cu',order_id,null)) as sl_don_thanh_cong_khach_cu,
+        SUM(doanh_thu) as doanh_thu_don_tao,
+        SUM(doanh_thu_tra_hang) as doanh_thu_tra_hang,
+        SUM(IF(status = 'finished',doanh_thu_thuan,0)) as doanh_thu_b2c_thanh_cong,
+        SUM( IF(loai_khach = 'khach_moi' and status = 'finished',doanh_thu_thuan,0)) as doanh_thu_b2c_khach_moi,
+        SUM( IF(loai_khach = 'khach_cu' and status = 'finished',doanh_thu_thuan,0)) as doanh_thu_b2c_khach_cu,
+        SUM(sl_san_pham) as sl_ban_ra,
+        SUM(IF(status = 'finished',sl_san_pham,0)) sl_don_san_pham_thanh_cong,
+        SUM( IF(loai_khach = 'khach_moi' and status = 'finished',sl_san_pham,0)) as sl_san_pham_khach_moi,
+        SUM( IF(loai_khach = 'khach_cu' and status = 'finished',sl_san_pham,0)) as sl_san_pham_khach_cu,
+        SUM( IF(loai_khach = 'khach_moi' and status = 'finished',doanh_thu_thuan,0))/COUNT(if(status = 'finished'and loai_khach = 'khach_moi',order_id,null)) as gia_tri_trung_binh_don_hang_khach_moi,
+        SUM( IF(loai_khach = 'khach_cu' and status = 'finished',doanh_thu_thuan,0))/COUNT(if(status = 'finished'and loai_khach = 'khach_cu',order_id,null)) as gia_tri_trung_binh_don_hang_khach_cu
+
+    FROM orders
+    GROUP BY
+        created_month,
+        created_year,
+        department_lv1,
+        department_lv2
+    )
+SELECT * FROM caculate_order
