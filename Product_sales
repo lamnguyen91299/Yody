@@ -1,0 +1,273 @@
+    set internal_tmp_mem_storage_engine = Memory;
+    WITH store_department as (
+        SELECT
+            s.id as store_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2,
+            s.city_name,
+        CASE
+            WHEN s.city_name = 'Tỉnh Bắc Giang' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Bắc Kạn' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Bắc Ninh' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Bình Định' THEN '4. Duyên hải Nam trung bộ'
+            WHEN s.city_name = 'Tỉnh Bình Thuận' THEN '4. Duyên hải Nam trung bộ'
+            WHEN s.city_name = 'Tỉnh Đắk Lắk' THEN '5. Tây nguyên'
+            WHEN s.city_name = 'Tỉnh Đắk Nông' THEN '5. Tây nguyên'
+            WHEN s.city_name = 'Tỉnh Điện Biên' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Gia Lai' THEN '5. Tây nguyên'
+            WHEN s.city_name = 'Tỉnh Hà Giang' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Hà Nam' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Hà Tĩnh' THEN '3. Bắc trung bộ'
+            WHEN s.city_name = 'Tỉnh Hải Dương' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Hòa Bình' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Hưng Yên' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Khánh Hòa' THEN '4. Duyên hải Nam trung bộ'
+            WHEN s.city_name = 'Tỉnh Kon Tum' THEN '5. Tây nguyên'
+            WHEN s.city_name = 'Tỉnh Lai Châu' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Lâm Đồng' THEN '5. Tây nguyên'
+            WHEN s.city_name = 'Tỉnh Lạng Sơn' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Lào Cai' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Nam Định' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Nghệ An' THEN '3. Bắc trung bộ'
+            WHEN s.city_name = 'Tỉnh Ninh Bình' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Phú Thọ' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Phú Yên' THEN '4. Duyên hải Nam trung bộ'
+            WHEN s.city_name = 'Tỉnh Quảng Bình' THEN '3. Bắc trung bộ'
+            WHEN s.city_name = 'Tỉnh Quảng Nam' THEN '4. Duyên hải Nam trung bộ'
+            WHEN s.city_name = 'Tỉnh Quảng Ngãi' THEN '4. Duyên hải Nam trung bộ'
+            WHEN s.city_name = 'Tỉnh Quảng Ninh' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Quảng Trị' THEN '3. Bắc trung bộ'
+            WHEN s.city_name = 'Tỉnh Sơn La' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Thái Bình' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Thái Nguyên' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Thanh Hóa' THEN '3. Bắc trung bộ'
+            WHEN s.city_name = 'Tỉnh Thừa Thiên - Huế' THEN '3. Bắc trung bộ'
+            WHEN s.city_name = 'Tỉnh Tuyên Quang' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'Tỉnh Vĩnh Long' THEN '7. Đồng bằng sông Cửu Long'
+            WHEN s.city_name = 'Tỉnh Vĩnh Phúc' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'Tỉnh Yên Bái' THEN '1. Trung du và miền núi phía bắc'
+            WHEN s.city_name = 'TP. Cần Thơ' THEN '7. Đồng bằng sông Cửu Long'
+            WHEN s.city_name = 'TP. Đà Nẵng' THEN '4. Duyên hải Nam trung bộ'
+            WHEN s.city_name = 'TP. Hà Nội' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'TP. Hải Phòng' THEN '2. Đồng bằng sông Hồng'
+            WHEN s.city_name = 'TP. Hồ Chí Minh' THEN '6. Đông nam bộ'
+            WHEN s.city_name = 'Tỉnh Bình Dương' THEN '6. Đông nam bộ'
+        ELSE NULL
+        END as vung
+        FROM prod_core_service.store s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and d.is_deleted = 0
+            and d.status = 'active'
+            and department_lv1 = 'KINH DOANH OFFLINE'
+    )
+    , source_department as (
+        SELECT
+            s.id as source_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2
+        FROM prod_core_service.source s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH ONLINE')
+    , payment as (
+        SELECT
+            order_id,
+            SUM(amount) as amount
+        FROM prod_order_service.payment
+        WHERE 1=1
+            and payment_method_code = 'point'
+    #         and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= '2022-04-01'
+            and CAST(DATE_ADD(created_date,INTERVAL 7 HOUR) as date) >= '2022-11-01'
+    #         and order_id > 23273554
+        GROUP BY order_id
+    )
+    , order_line as (
+    SELECT
+    # thoi gian
+        CAST(DATE_ADD(ol.created_date, INTERVAL 7 HOUR) as date) as created_date,
+    # loai san pham
+        ol.id as order_line_id,
+        o.id as order_id,
+        left(ol.sku,7) sku7,
+        left(ol.sku,3) sku3,
+        v.color as mau,
+        v.size as size,
+        sm.`group` as loai_sp,
+        CASE
+            WHEN left(ol.sku,7) =  'AKK4001' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKK4688' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKK5019' THEN ' Áo Khoác Gió Cho Bé 3C Plus'
+            WHEN left(ol.sku,7) =  'AKK5021' THEN ' Áo Khoác Gió Thông Minh Trẻ Em'
+            WHEN left(ol.sku,7) =  'AKK5023' THEN ' Áo Gió Trẻ Em 3C Plus'
+            WHEN left(ol.sku,7) =  'AKM1925' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM3003' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM3013' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM3017' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM3025' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM3027' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM4001' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM4004' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM4027' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM4029' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM4687' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKM5037' THEN ' Áo Khoác Gió Nam 3C Plus'
+            WHEN left(ol.sku,7) =  'AKM5041' THEN ' Áo Khoác Gió Thông Minh Nam'
+            WHEN left(ol.sku,7) =  'AKM5047' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN1924' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN3002' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN3032' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN3132' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN4024' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN4027' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN4054' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN4686' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN5006' THEN ' Áo Khoác'
+            WHEN left(ol.sku,7) =  'AKN5040' THEN ' Áo Khoác Gió Nữ 3C Plus'
+            WHEN left(ol.sku,7) =  'AKN5042' THEN ' Áo Khoác Gió Thông Minh'
+            WHEN left(ol.sku,7) =  'PHK3045' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHK4002' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHK5001' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHK5009' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHM3000' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHM3002' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHM4001' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHM4003' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHM5001' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHM5017' THEN ' Áo Phao Nam 3s Plus'
+            WHEN left(ol.sku,7) =  'PHN3000' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN3001' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN3005' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN3006' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN3007' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN4000' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN4002' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN4006' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN4008' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN4010' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN4012' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN5000' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN5004' THEN ' Áo Phao'
+            WHEN left(ol.sku,7) =  'PHN5036' THEN ' Áo Khoác Phao Nữ 3s Plus'
+        ELSE NULL END as loai_phao_gio,
+        COALESCE(std.city_name,sa.city) as tinh,
+        std.vung,
+    #     IF(CAST(DATE_ADD(o.created_date, INTERVAL  7 HOUR) as date) = CAST(DATE_ADD(r.first_order_time, INTERVAL  7 HOUR) as date),'khach_moi','khach_cu') as loai_khach_ngay,
+    /*    if(
+            YEAR(DATE_ADD(o.created_date,INTERVAL 7 HOUR)) = YEAR(DATE_ADD(r.first_order_time, INTERVAL 7 HOUR)) AND
+            QUARTER(DATE_ADD(o.created_date,INTERVAL 7 HOUR)) = QUARTER(DATE_ADD(r.first_order_time, INTERVAL 7 HOUR)),
+            'khach_moi','khach_cu')
+        as loai_khach_quy,*/
+
+    #     min(CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date)) OVER(PARTITION BY c.id,sm.`group` ORDER BY ol.id ASC) as first_order_product,
+    #     max(CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date)) OVER(PARTITION BY c.id,sm.`group` ORDER BY ol.id DESC) as last_order_product,
+
+    #     DATE_FORMAT(CAST(DATE_ADD(ol.created_date, INTERVAL 7 HOUR) as date),'01/%m/%Y') as created_month,
+    #     DATE_FORMAT(CAST(DATE_ADD(ol.created_date, INTERVAL 7 HOUR) as date),'01/01/%Y') as created_year,
+    # vung
+        COALESCE(std.department_lv1,sod.department_lv1,'Khác') as department_lv1,
+        COALESCE(std.department_lv2,sod.department_lv2,'Khác') as department_lv2,
+
+    #metric
+        ol.quantity as so_luong_san_pham,
+        ol.amount as don_gia,
+        ol.discount_value as chiet_khau,
+        ol.line_amount_after_line_discount - COALESCE((p.amount/o.total_quantities),0) as doanh_thu_sau_chiet_khau,
+
+    # khach hang
+        c.id as customer_id,
+    #     c.full_name as ten_khach_hang,
+    #     c.phone as sdt,
+        c.gender as gioi_tinh,
+        2022 - year(c.birthday) as tuoi,
+        CASE
+            WHEN 2022 - year(c.birthday) < 20 THEN '<20'
+            WHEN 2022 - year(c.birthday) < 30 THEN '20-29'
+            WHEN 2022 - year(c.birthday) < 45 THEN '30-45'
+            WHEN 2022 - year(c.birthday) >=45 THEN '>46'
+        END as nhom_tuoi,
+        c.customer_level_name as hang_khach_hang,
+        CASE
+            WHEN r.total_paid_amount >= 10000000 THEN 'VIP'
+            WHEN r.total_paid_amount >= 3000000 THEN 'can_VIP'
+            WHEN r.total_finished_order >= 2 THEN 'customer'
+            WHEN r.total_finished_order >= 1 THEN 'shopper'
+            ELSE 'khach_khac'
+        END as tep_khach_hang
+    /*    if(
+            YEAR(DATE_ADD(o.created_date,INTERVAL 7 HOUR)) = YEAR(DATE_ADD(r.first_order_time, INTERVAL 7 HOUR)),
+            'khach_moi','khach_cu')
+        as loai_khach_nam,
+        IF(date_format(DATE_ADD(o.created_date, INTERVAL  7 HOUR),'%m-%Y') = date_format(DATE_ADD(r.first_order_time, INTERVAL  7 HOUR),'%m-%Y'),'khach_moi','khach_cu') as loai_khach_thang,
+        IF(CAST(DATE_ADD(r.first_order_time, INTERVAL  7 HOUR)as date) BETWEEN '2021-11-15' AND '2022-01-31','khach_moi','khach_cu')*/
+    FROM prod_order_service.orders o
+    JOIN prod_order_service.order_line ol
+        on ol.order_id = o.id
+    #     and o.id > 23169954
+    #     and ol.id > 73517833
+        and o.is_deleted = 0
+        and o.status = 'finished'
+        and ol.is_deleted = 0
+        and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR)as date) >= '2022-11-01'
+    # 2022-01-09
+    #     and ol.id >= 67146058
+    # don hang qua tang
+        and LEFT(sku,1) <> 'Z'
+        and ol.amount > 0
+    # don hang dong phuc
+        and o.total < 10000000
+    LEFT JOIN payment p on p.order_id = o.id
+    left join prod_order_service.shipping_address sa on
+        sa.order_id = o.id
+        and o.channel_code <> 'POS'
+        and sa.is_deleted = 0
+        and sa.order_id <> -1
+        and sa.is_deleted = 0
+    LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+    LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+    LEFT JOIN prod_product_service.sku3_maps sm on sm.sku3 = LEFT(ol.sku,3)
+    LEFT JOIN prod_customer_service.customer c on o.customer_id = c.id
+    LEFT JOIN prod_customer_service.reports r on c.id = r.user_id
+    LEFT JOIN prod_product_service.variant v on v.sku = ol.sku and v.is_deleted = 0 and v.status = 'active'
+    WHERE 1=1
+    #     and o.id > 18876533
+    #     and o.id <=
+        and sm.`group` = 'Phao gió'
+
+    )
+    # SELECT * FROM order_line
+
+    #     and ol.created_date >= '2022-09-01'
+    #     and ol.id >= 67146058
+
+    ,sku_fact_sales as (
+    SELECT
+        loai_sp,
+        loai_phao_gio,
+        gioi_tinh,
+        vung,
+        created_date,
+        tep_khach_hang,
+        department_lv1,
+        department_lv2,
+        nhom_tuoi,
+        SUM(doanh_thu_sau_chiet_khau) as doanh_thu,
+        COUNT(DISTINCT order_id) as SL_don_hang,
+        COUNT(Distinct customer_id) as sl_khach_hang,
+        SUM(so_luong_san_pham) as sl_san_pham
+    FROM order_line
+    GROUP BY
+        loai_sp,
+        loai_phao_gio,
+        gioi_tinh,
+        vung,
+        created_date,
+        tep_khach_hang,
+        department_lv1,
+        department_lv2,
+        nhom_tuoi
+    )
+    SELECT *
+    FROM sku_fact_sales
