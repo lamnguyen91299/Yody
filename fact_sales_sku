@@ -1,0 +1,115 @@
+set internal_tmp_mem_storage_engine = Memory;
+WITH store_department as (
+    SELECT
+        s.id as store_id,
+        d.id as department_id,
+        d.department_lv1,
+        d.department_lv2,
+        s.city_name
+    FROM prod_core_service.store s
+    LEFT JOIN prod_account_service.department d on s.department_id = d.id
+    WHERE 1=1
+        and department_lv1 = 'KINH DOANH OFFLINE'
+)
+, source_department as (
+    SELECT
+        s.id as source_id,
+        d.id as department_id,
+        d.department_lv1,
+        d.department_lv2
+    FROM prod_core_service.source s
+    LEFT JOIN prod_account_service.department d on s.department_id = d.id
+    WHERE 1=1
+        and department_lv1 = 'KINH DOANH ONLINE')
+, payment as (
+    SELECT
+        order_id,
+        SUM(amount) as amount
+    FROM prod_order_service.payment
+    WHERE 1=1
+        and payment_method_code = 'point'
+        and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= '2022-01-01'
+    GROUP BY order_id
+)
+, order_line as (
+SELECT
+    ol.id,
+    ol.sku,
+    left(ol.sku,3) sku3,
+    DATE_FORMAT(CAST(DATE_ADD(ol.created_date, INTERVAL 7 HOUR) as date),'01/%m/%Y') as created_date,
+    DATE_FORMAT(CAST(DATE_ADD(ol.created_date, INTERVAL 7 HOUR) as date),'01/%m/%Y') as created_month,
+    DATE_FORMAT(CAST(DATE_ADD(ol.created_date, INTERVAL 7 HOUR) as date),'01/01/%Y') as created_year,
+    o.channel_code,
+    ol.order_id,
+    ol.quantity as quantities,
+    ol.line_amount_after_line_discount - COALESCE((p.amount/o.total_quantities),0) as total_amount,
+    ol.discount_amount,
+    COALESCE(std.department_lv1,sod.department_lv1,'Khác') as department_lv1,
+    COALESCE(std.department_lv2,sod.department_lv2,'Khác') as department_lv2,
+    COALESCE(std.city_name,sa.city) as city,
+    o.store_id,
+    o.source_id,
+    o.customer_id
+FROM prod_order_service.orders o
+JOIN prod_order_service.order_line ol
+    on ol.order_id = o.id
+#     and o.id >= 9250354
+    and o.is_deleted = 0
+    and o.status = 'finished'
+    and ol.is_deleted = 0
+    and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date) >= '2021-01-01'
+# 2022-01-09
+#     and ol.id >= 67146058
+# don hang qua tang
+    and LEFT(sku,1) <> 'Z'
+    and ol.line_amount_after_line_discount <> 0
+# don hang dong phuc
+#     and o.total < 10000000
+LEFT JOIN payment p on p.order_id = o.id
+left join prod_order_service.shipping_address sa on
+    sa.order_id = o.id
+    and o.channel_code <> 'POS'
+    and sa.is_deleted = 0
+    and sa.order_id <> -1
+LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+WHERE 1=1
+    and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR)as date) >= '2022-01-01'
+)
+# SELECT * FROM order_line
+
+#     and ol.created_date >= '2022-09-01'
+#     and ol.id >= 67146058
+
+,sku_fact_sales as (
+SELECT
+    sku3,
+    customer_id,
+    created_date,
+    created_month,
+    created_year,
+    store_id,
+    source_id,
+    department_lv1,
+    department_lv2,
+    city,
+#     COUNT(DISTINCT order_id) as total_order,
+    SUM(quantities) as total_quantites,
+    SUM(total_amount) as total_amount,
+    SUM(discount_amount) as total_discount
+FROM order_line
+GROUP BY
+    sku3,
+    customer_id,
+    created_date,
+    created_month,
+    created_year,
+    store_id,
+    source_id,
+    department_lv1,
+    department_lv2,
+    city
+)
+SELECT *
+FROM sku_fact_sales
+
