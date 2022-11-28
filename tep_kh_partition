@@ -1,0 +1,101 @@
+
+WITH store_department as (
+        SELECT
+            s.id as store_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2,
+            s.city_name,
+            s.name
+        FROM prod_core_service.store s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH OFFLINE'
+    )
+    , source_department as (
+        SELECT
+            s.id as source_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2,
+            s.name
+        FROM prod_core_service.source s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH ONLINE')
+,
+ payment as (
+    SELECT
+        order_id,
+        SUM(amount) as amount
+    FROM prod_order_service.payment
+    WHERE 1=1
+    and payment_method_code = 'point'
+    GROUP BY order_id
+),
+ return_order as (
+    SELECT
+        order_id,
+        SUM(money_refund) as money_refund
+    FROM prod_order_service.order_return
+    WHERE 1=1
+    and status = 'finished'
+    GROUP BY order_id
+),
+orders as(
+SELECT
+    o.id,
+    o.created_date,
+    o.customer_id,
+    o.total,
+    CAST(DATE_ADD(c.birthday, INTERVAL 7 HOUR ) as date) as birthday,
+    c.phone,
+    p.amount,
+    SUM(o.total- coalesce(p.amount,0) - coalesce(re.money_refund,0)) OVER (
+      PARTITION BY o.customer_id
+      ORDER BY o.created_date
+      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)   as total_paid,
+    count(o.id) OVER (
+      PARTITION BY o.customer_id
+      ORDER BY o.created_date
+      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as total_order,
+    ROW_NUMBER() over (partition by customer_id order by created_date DESC) as rn,
+    COALESCE(std.department_lv1, sod.department_lv1, 'Khác') as department_lv1,
+    COALESCE(std.department_lv2, sod.department_lv2, 'Khác') as department_lv2,
+    COALESCE(std.name, sod.name, 'Khác') as shop
+FROM prod_order_service.orders o
+left join prod_customer_service.customer c on c.id = o.customer_id
+left join payment p  on o.id = p.order_id
+LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+LEFT JOIN return_order re on re.order_id = o.id
+WHERE 1=1
+#     and customer_id IN (25,26)
+    and total > 0
+    and o.status='finished'
+    and o.is_deleted=0
+    and o.total- coalesce(p.amount,0) - coalesce(re.money_refund,0) > 0
+    AND CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR ) as date) <= '2022-10-31'
+order by customer_id,id),
+
+hang_kh as (
+select
+    customer_id,
+    birthday,
+    phone,
+    department_lv1 as last_department_lv1,
+    department_lv2 as last_department_lv2,
+    shop as last_shop,
+   case
+       when (total_paid >= 10000000) then 'VIP'
+       when (total_paid >= 3000000 ) then 'NEAR VIP'
+       when (total_order>=2) then 'CUSTOMER'
+       when (total_order=1) then 'SHOPPER'
+    else 'khác' end tep_kh,
+    total_paid,
+    total_order
+from orders o
+WHERE rn = 1)
+
+SELECT *
+FROM hang_kh
