@@ -1,0 +1,142 @@
+WITH store_department as (
+        SELECT
+            s.id as store_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2,
+            s.city_name
+        FROM prod_core_service.store s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH OFFLINE'
+    )
+    , source_department as (
+        SELECT
+            s.id as source_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2
+        FROM prod_core_service.source s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH ONLINE')
+    , payment as (
+        SELECT
+            order_id,
+            SUM(amount) as amount
+        FROM prod_order_service.payment
+        WHERE 1=1
+            and payment_method_code = 'point'
+            and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= @report_date
+            and is_deleted = 0
+        GROUP BY order_id
+    )
+    , return_order as (
+        SELECT
+            order_id,
+            SUM(money_refund) as total_money_refund
+        FROM prod_order_service.order_return
+        WHERE 1=1
+            and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= @report_date
+            and is_deleted = 0
+        GROUP BY order_id
+    ),
+    gift_orders as (
+        SELECT
+            customer_id,
+            COUNT(id) as sl_don_qua
+        FROM prod_order_service.orders
+        WHERE 1=1
+            and status = 'finished'
+            and total = 0
+            and is_deleted = 0
+    )
+    , orders as (
+        SELECT
+# Date
+        CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date) as created_date,
+        DATE_FORMAT(DATE_ADD(o.created_date, INTERVAL 7 HOUR) , '%m/%Y') as created_month,
+        DATE_FORMAT(DATE_ADD(o.created_date, INTERVAL 7 HOUR) , '%Y') as created_year,
+
+# Customer
+        o.customer_id,
+        FIRST_VALUE(COALESCE(std.department_lv2, sod.department_lv2, 'Khác')) OVER( PARTITION BY o.customer_id ORDER BY o.id DESC)
+        as last_department_lv2_month,
+        FIRST_VALUE(COALESCE(std.department_lv1, sod.department_lv1, 'Khác')) OVER( PARTITION BY o.customer_id ORDER BY o.id DESC)
+        as last_department_lv1_month,
+        IF(DATE_FORMAT(DATE_ADD(o.created_date, INTERVAL 7 HOUR),'%m%y') = DATE_FORMAT(DATE_ADD(r.first_order_time, INTERVAL 7 HOUR) ,'%m%y'), 'khach_moi', 'khach_cu')
+        as loai_khach_thang,
+        CASE
+            WHEN ls.total_money_spend >= 10000000 THEN 'vip'
+            WHEN ls.total_money_spend >= 3000000 THEN 'near_vip'
+            WHEN (ls.total_order_count - COALESCE(go.sl_don_qua,0)) >= 2 THEN 'customer'
+            WHEN (ls.total_order_count - COALESCE(go.sl_don_qua,0)) = 1 THEN 'shopper'
+             ELSE 'khach_con_lai'
+        END as hang_khach,
+        CASE
+            WHEN month(DATE_ADD(o.created_date, INTERVAL 7 HOUR)) = month(DATE_ADD(c.birthday, INTERVAL 7 HOUR)) THEN 'sinh_nhat'
+            ELSE 'khong_sinh_nhat'
+        END as loai_khach_sinh_nhat,
+
+# order
+        o.id  as order_id,
+        IF((o.total - COALESCE(ro.total_money_refund, 0)) = 0, 'don_qua_tang','don_hang') as loai_don,
+        o.total_quantities as total_quantities,
+        o.total as doanh_thu_tru_tieu_diem,
+        (o.total - COALESCE(p.amount, 0) - COALESCE(ro.total_money_refund, 0)) as doanh_thu_thuan
+   FROM prod_order_service.orders o
+    LEFT JOIN return_order ro on ro.order_id = o.id
+    LEFT JOIN payment p on p.order_id = o.id
+    LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+    LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+    LEFT JOIN prod_customer_service.reports r on o.customer_id = r.user_id
+    LEFT JOIN prod_loyalty_service.customer_loyalties ls on ls.customer_id = o.customer_id
+    LEFT JOIN prod_customer_service.customer c on c.id = o.customer_id
+    LEFT JOIN gift_orders go on go.customer_id = o.customer_id
+    WHERE 1 = 1
+        and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR)as date) >= '2022-11-24'
+        and o.is_deleted = 0
+        and o.status = 'finished'
+    )
+,order_lines as (
+    SELECT
+        o.order_id,
+        SUM(ol.quantity) as total_quantities
+    FROM orders o
+    JOIN prod_order_service.order_line ol on ol.order_id = o.order_id
+    WHERE 1=1
+        and LEFT(ol.sku,1) <> 'Z'
+        and ol.line_amount_after_line_discount <> 0
+    GROUP BY  o.order_id
+    )
+
+ ,caculate_order as (
+        SELECT
+            created_month,
+            created_year,
+            last_department_lv1_month,
+            last_department_lv2_month,
+            loai_khach_sinh_nhat,
+            hang_khach,
+            loai_khach_thang,
+            loai_don,
+            COUNT(DISTINCT customer_id) as sl_khach,
+            COUNT(o.order_id) as sl_don_hang,
+            SUM(doanh_thu_thuan) as doanh_thu_thuan,
+            SUM(COALESCE(ol.total_quantities,o.total_quantities))as sl_sp,
+            '2022-11-24'
+#             CAST(date_format(curdate(), '%Y-%m-01') as date) as last_update_date
+        FROM orders o
+        LEFT JOIN order_lines ol on o.order_id = ol.order_id
+        GROUP BY
+            created_month,
+            created_year,
+            last_department_lv1_month,
+            last_department_lv2_month,
+            loai_khach_sinh_nhat,
+            hang_khach,
+            loai_khach_thang,
+            loai_don
+        )
+
+SELECT * FROM caculate_order
