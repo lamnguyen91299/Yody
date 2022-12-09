@@ -1,0 +1,165 @@
+WITH store_department as (
+    SELECT
+        s.id as store_id,
+        s.name,
+        d.id as department_id,
+        d.department_lv1,
+        d.department_lv2,
+        s.city_name
+    FROM prod_core_service.store s
+    LEFT JOIN prod_account_service.department d on s.department_id = d.id
+    WHERE 1=1
+        and department_lv1 = 'KINH DOANH OFFLINE'
+)
+, source_department as (
+    SELECT
+        s.id as source_id,
+        s.name,
+        d.id as department_id,
+        d.department_lv1,
+        d.department_lv2
+    FROM prod_core_service.source s
+    LEFT JOIN prod_account_service.department d on s.department_id = d.id
+    WHERE 1=1
+        and department_lv1 = 'KINH DOANH ONLINE'
+)
+, customer_import as (
+SELECT
+    id as customer_id,
+    last_order,
+    code,
+    campaign
+FROM prod_sale_channel.customer_wedding
+)
+
+, payment as (
+    SELECT
+        order_id,
+        SUM(amount) as amount
+    FROM prod_order_service.payment
+    WHERE 1=1
+        and payment_method_code = 'point'
+        and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= '2022-11-01'
+    GROUP BY order_id
+)
+, return_order as (
+    SELECT
+        order_id,
+        MAX(customer_id) as customer_id,
+        SUM(money_refund) as total_money_refund
+    FROM prod_order_service.order_return
+    WHERE 1=1
+        and CAST(DATE_ADD(created_date, INTERVAL 7 HOUR) as date) >= '2022-11-01'
+        and status = 'finished'
+        and is_deleted = 0
+    GROUP BY order_id
+)
+
+,customer_1 as (
+    SELECT
+    c.phone,
+    c.id as customer_id,
+    c.customer_level_name,
+#     c1.code,
+    d.last_order as shop_nhan_data,
+#     c1.use_status,
+    COALESCE(std.department_lv1,sod.department_lv1,'Khác') as department_lv1_nhan_data,
+    COALESCE(std.department_lv2,sod.department_lv2,'Khác') as department_lv2_nhan_data
+FROM customer_import d
+LEFT JOIN prod_customer_service.customer c on c.id = d.customer_id
+LEFT JOIN prod_customer_service.reports r on c.id = r.user_id
+LEFT JOIN store_department std on std.name = d.last_order
+LEFT JOIN source_department sod on sod.name = d.last_order
+# LEFT JOIN camp c1 on c.id = c1.customer_id
+where 1=1
+and d.campaign = 'CUOIT11'
+)
+
+, orders as (
+SELECT
+    o.id,
+    CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR) as date) as created_date,
+    o.channel_code,
+    COALESCE(std.department_lv1,sod.department_lv1,'Khác') as department_lv1,
+    COALESCE(std.department_lv2,sod.department_lv2,'Khác') as department_lv2,
+    c1.shop_nhan_data,
+    c1.department_lv1_nhan_data,
+    c1.department_lv2_nhan_data,
+    COALESCE(std.name,sod.name,'Khác') as shop_store_mua,
+    o.customer_id,
+    c1.customer_level_name,
+    c1.phone,
+    (o.total - COALESCE(p.amount, 0) - COALESCE(ro.total_money_refund, 0))  as doanh_thu
+#     c1.code as 20_10_code
+FROM prod_order_service.orders o
+JOIN customer_1 c1 on c1.customer_id = o.customer_id
+# LEFT JOIN camp as ca on o.id = ca.order_id
+LEFT JOIN payment p on p.order_id = o.id
+LEFT JOIN return_order ro on ro.order_id = o.id
+LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+WHERE 1=1
+#     and o.id >= 23358434
+    and o.status = 'finished'
+    and o.is_deleted = 0
+    and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR)as date) >= '2022-11-01'
+)
+,polo_discount as (
+SELECT
+    o.customer_id,
+    'nhan_qua' as nhan_qua
+FROM prod_order_service.orders o
+JOIN customer_import ci on o.customer_id = ci.customer_id
+# JOIN prod_order_service.order_line ol
+
+#     on ol.order_id = o.id
+#     and o.id >= 23358434
+#     and ol.line_amount_after_line_discount = 0
+#     and ol.sku NOT IN ('ZTM2','ZTM1')
+WHERE 1=1
+    and o.status = 'finished'
+    and o.is_deleted = 0
+    and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR)as date) >= '2022-11-01'
+    and  o.note LIKE '%CUOI%'
+GROUP BY o.customer_id
+)
+, customer_2 as (
+SELECT
+    o.customer_id,
+#     c1.use_status,
+    pd.nhan_qua,
+    SUM(o.total)  as doanh_thu
+FROM prod_order_service.orders o
+JOIN customer_1 c1 on c1.customer_id = o.customer_id
+LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+LEFT JOIN polo_discount pd on pd.customer_id = o.customer_id
+WHERE 1=1
+#     and o.id >= 23358434
+    and o.status = 'finished'
+    and o.is_deleted = 0
+    and CAST(DATE_ADD(o.created_date, INTERVAL 7 HOUR)as date) >= '2022-11-01'
+GROUP BY o.customer_id,pd.nhan_qua
+),
+customer_3 as (
+
+SELECT
+    c1.customer_id,
+    CASE
+        WHEN c2.nhan_qua is null and doanh_thu > 0 THEN 'khong_nhan_qua_mua_hang'
+        WHEN c2.nhan_qua is null and doanh_thu is null THEN 'khong_nhan_qua_khong_mua_hang'
+        WHEN c2.nhan_qua is not null and doanh_thu > 0 THEN 'nhan_qua_mua_hang'
+        WHEN c2.nhan_qua is not null and doanh_thu = 0 THEN 'chi_nhan_qua'
+    END khach_nhan_qua,
+    nhan_qua
+FROM customer_1 c1
+LEFT JOIN  customer_2 c2 on c1.customer_id = c2.customer_id
+
+)
+SELECT
+    o.*,
+    c3.khach_nhan_qua
+FROM orders o
+LEFT JOIN customer_3 c3 on o.customer_id = c3.customer_id
+# SELECT *
+# FROM customer_3
