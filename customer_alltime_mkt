@@ -32,6 +32,7 @@ WHERE 1=1
     and o.total = 0
     and o.status='finished'
     and o.is_deleted=0
+    and o.return_status = 'unreturn'
 group by o.customer_id
 )
 , customer_report as (
@@ -42,13 +43,11 @@ group by o.customer_id
         COALESCE(std.department_lv1,sod.department_lv1,'Khác') last_department_lv1,
         COALESCE(std.department_lv2,sod.department_lv2,'Khác') last_department_lv2,
         cl.total_money_spend,
-        r.total_finished_order - COALESCE(sl_don_qua,0) as total_finished_order,
-   case
-       when (cl.total_money_spend >= 10000000) then 'VIP'
-       when (cl.total_money_spend >= 3000000 ) then 'NEAR VIP'
-       when (r.total_finished_order - COALESCE(sl_don_qua,0)>=2) then 'CUSTOMER'
-       when (r.total_finished_order - COALESCE(sl_don_qua,0)=1) then 'SHOPPER'
-    else 'khác' end tep_kh
+        CASE
+            WHEN total_money_spend = 0 THEN 0
+            WHEN r.total_finished_order - COALESCE(sl_don_qua,0) < 0 THEN total_finished_order
+            ELSE r.total_finished_order - COALESCE(sl_don_qua,0)
+            END as total_finished_order
     FROM prod_customer_service.customer c
     JOIN prod_customer_service.reports r on c.id = r.user_id
     LEFT JOIN order_qua_tang oqt on oqt.customer_id = c.id
@@ -56,6 +55,16 @@ group by o.customer_id
     LEFT JOIN source_department sod on sod.source_id = r.source_id_of_last_order_online and r.last_order_type = 'online'
     LEFT JOIN prod_loyalty_service.customer_loyalties cl on cl.customer_id = c.id
 )
+, customer_report_2 as (
+    SELECT
+        cr.*,
+       case
+       when (total_money_spend >= 10000000) then 'VIP'
+       when (total_money_spend >= 3000000 ) then 'NEAR VIP'
+       when total_finished_order >= 2  then 'CUSTOMER'
+       when total_finished_order =1 then 'SHOPPER'
+    else 'khác' end tep_kh
+    FROM customer_report cr
+)
 
-SELECT *
-FROM customer_report
+SELECT * FROM customer_report_2
