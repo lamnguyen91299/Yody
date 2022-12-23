@@ -1,0 +1,61 @@
+WITH store_department as (
+        SELECT
+            s.id as store_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2,
+            s.city_name,
+            s.name
+        FROM prod_core_service.store s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH OFFLINE'
+    )
+    , source_department as (
+        SELECT
+            s.id as source_id,
+            d.id as department_id,
+            d.department_lv1,
+            d.department_lv2,
+            s.name
+        FROM prod_core_service.source s
+        LEFT JOIN prod_account_service.department d on s.department_id = d.id
+        WHERE 1=1
+            and department_lv1 = 'KINH DOANH ONLINE')
+    , order_qua_tang as(
+SELECT
+    o.customer_id,
+    COUNT(o.id) as sl_don_qua
+FROM prod_order_service.orders o
+WHERE 1=1
+#     and customer_id IN (25,26)
+    and o.total = 0
+    and o.status='finished'
+    and o.is_deleted=0
+group by o.customer_id
+)
+, customer_report as (
+    SELECT
+        c.id as customer_id,
+        CAST(DATE_ADD(c.birthday, INTERVAL 7 HOUR) as date) birthday,
+        c.phone,
+        COALESCE(std.department_lv1,sod.department_lv1,'Khác') last_department_lv1,
+        COALESCE(std.department_lv2,sod.department_lv2,'Khác') last_department_lv2,
+        cl.total_money_spend,
+        r.total_finished_order - COALESCE(sl_don_qua,0) as total_finished_order,
+   case
+       when (cl.total_money_spend >= 10000000) then 'VIP'
+       when (cl.total_money_spend >= 3000000 ) then 'NEAR VIP'
+       when (r.total_finished_order - COALESCE(sl_don_qua,0)>=2) then 'CUSTOMER'
+       when (r.total_finished_order - COALESCE(sl_don_qua,0)=1) then 'SHOPPER'
+    else 'khác' end tep_kh
+    FROM prod_customer_service.customer c
+    JOIN prod_customer_service.reports r on c.id = r.user_id
+    LEFT JOIN order_qua_tang oqt on oqt.customer_id = c.id
+    LEFT JOIN store_department std on std.store_id = r.store_id_of_last_order_offline and r.last_order_type = 'offline'
+    LEFT JOIN source_department sod on sod.source_id = r.source_id_of_last_order_online and r.last_order_type = 'online'
+    LEFT JOIN prod_loyalty_service.customer_loyalties cl on cl.customer_id = c.id
+)
+
+SELECT *
+FROM customer_report
