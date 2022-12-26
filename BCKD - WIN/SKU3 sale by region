@@ -1,0 +1,285 @@
+WITH store_department as (
+    SELECT
+        s.id as store_id,
+        s.name,
+        d.id as department_id,
+        d.department_lv1,
+        d.department_lv2,
+        CASE
+        WHEN s.id = '1' THEN 'Nam Trung Bộ'
+        WHEN s.id = '100' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '101' THEN 'Nam Trung Bộ'
+        WHEN s.id = '102' THEN 'Nam Trung Bộ'
+        WHEN s.id = '103' THEN 'Nam Trung Bộ'
+        WHEN s.id = '104' THEN 'Nam Trung Bộ'
+        WHEN s.id = '105' THEN 'Nam Trung Bộ'
+        WHEN s.id = '106' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '107' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '108' THEN 'Tây Nguyên'
+        WHEN s.id = '109' THEN 'Nam Trung Bộ'
+        WHEN s.id = '11' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '110' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '111' THEN 'Tây Nguyên'
+        WHEN s.id = '112' THEN 'Nam Trung Bộ'
+        WHEN s.id = '113' THEN 'Nam Trung Bộ'
+        WHEN s.id = '116' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '117' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '118' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '12' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '120' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '122' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '123' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '125' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '126' THEN 'Miền Bắc'
+        WHEN s.id = '127' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '128' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '129' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '131' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '133' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '134' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '135' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '136' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '137' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '138' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '141' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '142' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '143' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '144' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '146' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '147' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '148' THEN 'Miền Bắc'
+        WHEN s.id = '149' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '150' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '152' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '154' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '155' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '156' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '157' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '159' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '160' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '161' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '162' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '163' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '164' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '165' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '167' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '168' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '169' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '170' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '171' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '172' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '174' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '176' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '177' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '178' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '182' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '183' THEN 'Miền Bắc'
+        WHEN s.id = '185' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '186' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '187' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '189' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '190' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '191' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '192' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '193' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '194' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '195' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '196' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '197' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '198' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '199' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '2' THEN 'Nam Trung Bộ'
+        WHEN s.id = '200' THEN 'Miền Bắc'
+        WHEN s.id = '201' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '203' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '204' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '205' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '206' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '207' THEN 'Tây Nam Bộ'
+        WHEN s.id = '208' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '209' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '210' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '211' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '212' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '213' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '215' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '217' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '218' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '219' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '220' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '221' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '222' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '223' THEN 'Miền Bắc'
+        WHEN s.id = '227' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '228' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '229' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '23' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '231' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '24' THEN 'Nam Trung Bộ'
+        WHEN s.id = '240' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '241' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '244' THEN 'Đông Nam Bộ'
+        WHEN s.id = '245' THEN 'Tây Nguyên'
+        WHEN s.id = '247' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '249' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '25' THEN 'Nam Trung Bộ'
+        WHEN s.id = '254' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '255' THEN 'Tây Nguyên'
+        WHEN s.id = '256' THEN 'Nam Trung Bộ'
+        WHEN s.id = '257' THEN 'Đông Nam Bộ'
+        WHEN s.id = '258' THEN 'Đông Nam Bộ'
+        WHEN s.id = '259' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '26' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '260' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '263' THEN 'Đông Nam Bộ'
+        WHEN s.id = '269' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '27' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '272' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '275' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '278' THEN 'Tây Nguyên'
+        WHEN s.id = '279' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '280' THEN 'Đông Nam Bộ'
+        WHEN s.id = '281' THEN 'Nam Trung Bộ'
+        WHEN s.id = '282' THEN 'Đông Nam Bộ'
+        WHEN s.id = '283' THEN 'Đông Nam Bộ'
+        WHEN s.id = '284' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '285' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '286' THEN 'Nam Trung Bộ'
+        WHEN s.id = '287' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '29' THEN 'Tây Nguyên'
+        WHEN s.id = '290' THEN 'Tây Nam Bộ'
+        WHEN s.id = '294' THEN 'Tây Nam Bộ'
+        WHEN s.id = '3' THEN 'Đông Nam Bộ'
+        WHEN s.id = '30' THEN 'Tây Nguyên'
+        WHEN s.id = '302' THEN 'Đông Nam Bộ'
+        WHEN s.id = '303' THEN 'Nam Trung Bộ'
+        WHEN s.id = '306' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '307' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '309' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '31' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '310' THEN 'Nam Trung Bộ'
+        WHEN s.id = '311' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '315' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '316' THEN 'Nam Trung Bộ'
+        WHEN s.id = '32' THEN 'Tây Nguyên'
+        WHEN s.id = '320' THEN 'Đông Nam Bộ'
+        WHEN s.id = '324' THEN 'Nam Trung Bộ'
+        WHEN s.id = '325' THEN 'Đông Nam Bộ'
+        WHEN s.id = '326' THEN 'Đông Nam Bộ'
+        WHEN s.id = '33' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '34' THEN 'Nam Trung Bộ'
+        WHEN s.id = '35' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '36' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '37' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '38' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '39' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '4' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '40' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '41' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '42' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '43' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '44' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '45' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '46' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '47' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '48' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '49' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '5' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '50' THEN 'Tây Nguyên'
+        WHEN s.id = '51' THEN 'Nam Trung Bộ'
+        WHEN s.id = '52' THEN 'Nam Trung Bộ'
+        WHEN s.id = '53' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '55' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '56' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '57' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '58' THEN 'Nam Trung Bộ'
+        WHEN s.id = '59' THEN 'Tây Nguyên'
+        WHEN s.id = '6' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '60' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '61' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '62' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '63' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '64' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '65' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '66' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '67' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '69' THEN 'Nam Trung Bộ'
+        WHEN s.id = '7' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '70' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '71' THEN 'Tây Nguyên'
+        WHEN s.id = '72' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '74' THEN 'Tây Nam Bộ'
+        WHEN s.id = '75' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '8' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '80' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '82' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '83' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '84' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '88' THEN 'Nam Trung Bộ'
+        WHEN s.id = '9' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '90' THEN 'Đông Bắc Bộ'
+        WHEN s.id = '91' THEN 'Tây Bắc Bộ'
+        WHEN s.id = '92' THEN 'Tây Nguyên'
+        WHEN s.id = '93' THEN 'Nam Trung Bộ'
+        WHEN s.id = '94' THEN 'Tây Nguyên'
+        WHEN s.id = '96' THEN 'Nam Trung Bộ'
+        WHEN s.id = '97' THEN 'Nam Trung Bộ'
+        WHEN s.id = '98' THEN 'Bắc Trung Bộ'
+        WHEN s.id = '99' THEN 'Nam Trung Bộ'
+        ELSE 'Khác' END as region,
+        s.city_name
+    FROM prod_core_service.store s
+             LEFT JOIN prod_account_service.department d on s.department_id = d.id
+    WHERE 1=1
+      and department_lv1 = 'KINH DOANH OFFLINE'
+)
+   , source_department as (
+    SELECT
+        s.id as source_id,
+        s.name,
+        d.id as department_id,
+        d.department_lv1,
+        d.department_lv2,
+        d.department_lv2 as region
+    FROM prod_core_service.source s
+             LEFT JOIN prod_account_service.department d on s.department_id = d.id
+    WHERE 1=1
+      and department_lv1 = 'KINH DOANH ONLINE')
+   ,sku_sales as (
+    SELECT
+        LEFT(ol.sku,3) as sku3,
+        COALESCE(std.department_lv1,sod.department_lv1,'Khác') as department_lv1,
+        COALESCE(std.department_lv2,sod.department_lv2,'Khác') as department_lv2,
+        COALESCE(std.region,sod.region,'Khác') as region,
+#         IF(o.channel = 'POS',CONCAT('std',o.store_id),CONCAT('sod',o.source_id)) as store_source_id,
+        DATE_FORMAT(CAST(DATE_ADD(o.finished_on,INTERVAL 7 HOUR) as date),'%Y/%m/01') finished_date,
+        DATE_FORMAT(CAST(DATE_ADD(o.finished_on,INTERVAL 7 HOUR) as date),'%Y/%m') finished_month,
+        quantity as quantity,
+        ol.amount,
+        ol.line_amount_after_line_discount as line_amount_after_line_discount
+    FROM prod_order_service.orders o
+             JOIN prod_order_service.order_line ol on o.id = ol.order_id
+             LEFT JOIN store_department std on std.store_id = o.store_id and o.channel_code = 'POS'
+             LEFT JOIN source_department sod on sod.source_id = o.source_id and o.channel_code <> 'POS'
+    WHERE 1=1
+      and o.id >= 24867585
+      and o.is_deleted = 0
+      and o.status = 'finished'
+)
+
+SELECT
+    sku3,
+    department_lv1,
+    region,
+    finished_date,
+    finished_month,
+    SUM(quantity) as quantity,
+    SUM(amount) as amount,
+    SUM(line_amount_after_line_discount) as total
+FROM sku_sales
+GROUP BY
+    sku3,
+    department_lv1,
+    region,
+    finished_date,
+    finished_month
