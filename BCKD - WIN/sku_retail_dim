@@ -1,0 +1,30 @@
+with sku_stock as (
+select
+    CONCAT('std',store_id) store_source_id,
+    left(sku,3) sku3,
+    SUM(on_hand + transferring + shipping) as  total_stock
+from prod_inventory_service.inventories
+where 1 = 1
+  and is_deleted = 0
+GROUP BY
+    store_id,
+    left(sku,3)
+)
+, sku_retail_price as (
+
+    SELECT
+        LEFT(v.sku,3) sku3,
+        AVG(retail_price)  avg_retail_price
+    FROM prod_product_service.variant_price vp
+    JOIN prod_product_service.variant v on vp.variant_id = v.id
+    WHERE 1=1
+        and v.is_deleted = 0
+        and vp.is_deleted = 0
+    GROUP BY
+        LEFT(v.sku,3)
+)
+SELECT
+    ss.*,
+    srp.avg_retail_price
+FROm sku_stock ss
+LEFT JOIN sku_retail_price srp on ss.sku3 = srp.sku3
