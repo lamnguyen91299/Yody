@@ -42,7 +42,7 @@ group by o.customer_id
         c.phone,
         COALESCE(std.department_lv1,sod.department_lv1,'Khác') last_department_lv1,
         COALESCE(std.department_lv2,sod.department_lv2,'Khác') last_department_lv2,
-        cl.total_money_spend,
+        IF(cl.total_money_spend < 0,r.total_paid_amount,cl.total_money_spend) as total_money_spend,
         CASE
             WHEN total_money_spend = 0 THEN 0
             WHEN r.total_finished_order - COALESCE(sl_don_qua,0) < 0 THEN total_finished_order
